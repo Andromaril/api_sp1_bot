@@ -3,7 +3,6 @@ import os
 import time
 
 import requests
-import telegram
 from dotenv import load_dotenv
 from telegram import Bot
 from telegram.ext import Filters, MessageHandler, Updater
@@ -26,7 +25,7 @@ bot = Bot(token=TELEGRAM_TOKEN)
 
 
 def say_hi(update, context):
-    chat = update.effective_chat
+    update.effective_chat
     logger.info('Send message')
     text_hi = 'Привет,как будут обновления по домашке - сообщу!!!'
     context.bot.send_message(chat_id=CHAT_ID,
