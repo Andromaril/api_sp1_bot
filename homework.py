@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import time
 
 import requests
@@ -13,7 +14,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO, handlers=[
         logging.FileHandler("debug.log"),
-        logging.StreamHandler()
+        logging.StreamHandler(sys.stdout)
     ])
 
 
@@ -25,6 +26,7 @@ bot = Bot(token=TELEGRAM_TOKEN)
 
 
 def say_hi(update, context):
+    """Приветствие в ответ на любое текстовое сообщение пользователя."""
     update.effective_chat
     logger.info('Send message')
     text_hi = 'Привет,как будут обновления по домашке - сообщу!!!'
@@ -33,8 +35,17 @@ def say_hi(update, context):
 
 
 def parse_homework_status(homework):
+    """Проверка статуса домашней работы,
+       отправляет нужное сообщение к каждому статусу.
+    """
     homework_name = homework.get('homework_name')
+    if homework_name is None:
+        logger.error('no server response')
+        return 'нет ответа сервера'
     status = homework.get('status')
+    if status is None:
+        logger.error('no server response')
+        return 'нет ответа сервера'
     if status == 'rejected':
         verdict = 'К сожалению, в работе нашлись ошибки.'
     else:
@@ -43,20 +54,24 @@ def parse_homework_status(homework):
 
 
 def get_homeworks(current_timestamp):
-
+    """Получение статуса домашней работы."""
     url = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
     headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
     payload = {'from_date': current_timestamp}
-    homework_statuses = requests.get(url, headers=headers, params=payload)
+    try:
+        homework_statuses = requests.get(url, headers=headers, params=payload)
+    except requests.exceptions.RequestException as no_status:
+        logging.error(f'Error {no_status}!')
     return homework_statuses.json()
 
 
 def send_message(message):
+    """Отправка сообщений."""
     return bot.send_message(chat_id=CHAT_ID, text=message)
 
 
 def main():
-
+    """Вызывает все функции."""
     current_timestamp = int(time.time())
 
     while True:
