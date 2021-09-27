@@ -39,17 +39,19 @@ def parse_homework_status(homework):
        отправляет нужное сообщение к каждому статусу.
     """
     homework_name = homework.get('homework_name')
-    if homework_name is None:
+    er_homeworks = [None, '']
+    if homework_name in er_homeworks:
         logger.error('no server response')
         return 'нет ответа сервера'
+    normal_status = {'rejected': 'К сожалению, в работе нашлись ошибки.',
+                     'approved': 'Ревьюеру всё понравилось, работа зачтена!',
+                     'reviewing': 'работа взята в ревью'}
     status = homework.get('status')
-    if status is None:
+    if status in normal_status:
+        verdict = normal_status[status]
+    else:
         logger.error('no server response')
         return 'нет ответа сервера'
-    if status == 'rejected':
-        verdict = 'К сожалению, в работе нашлись ошибки.'
-    else:
-        verdict = 'Ревьюеру всё понравилось, работа зачтена!'
     return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
